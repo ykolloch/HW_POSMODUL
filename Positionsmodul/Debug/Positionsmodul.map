@@ -23,6 +23,12 @@ Discarded input sections
                 0x00000000       0x10 Positionsmodul.o
  .text.uart_read2
                 0x00000000       0x10 Positionsmodul.o
+ .text.wifiDirect_connection
+                0x00000000       0x7a Positionsmodul.o
+ .data.atCom4   0x00000000       0x15 Positionsmodul.o
+ .data.atCom3   0x00000000       0x49 Positionsmodul.o
+ .data.atCom2   0x00000000       0x22 Positionsmodul.o
+ .data.atCom1   0x00000000        0xa Positionsmodul.o
  .text          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  .data          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
@@ -188,7 +194,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0x244
+.text           0x00000000      0x1f6
  *(.vectors)
  .vectors       0x00000000       0x7c c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm644pa.o
                 0x00000000                __vector_default
@@ -290,21 +296,18 @@ END GROUP
                 0x00000130       0x10 Positionsmodul.o
                 0x00000130                uart_transmit2
  .text.uart_sendString
-                0x00000140       0x18 Positionsmodul.o
+                0x00000140       0x60 Positionsmodul.o
                 0x00000140                uart_sendString
- .text.wifiDirect_connection
-                0x00000158       0x6a Positionsmodul.o
-                0x00000158                wifiDirect_connection
  .text.__vector_20
-                0x000001c2       0x54 Positionsmodul.o
-                0x000001c2                __vector_20
- .text.main     0x00000216       0x2a Positionsmodul.o
-                0x00000216                main
-                0x00000240                . = ALIGN (0x2)
+                0x000001a0       0x20 Positionsmodul.o
+                0x000001a0                __vector_20
+ .text.main     0x000001c0       0x32 Positionsmodul.o
+                0x000001c0                main
+                0x000001f2                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000240        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
-                0x00000240                _exit
-                0x00000240                exit
+ .fini9         0x000001f2        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+                0x000001f2                _exit
+                0x000001f2                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -323,46 +326,41 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000240        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+ .fini0         0x000001f2        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x00000244                _etext = .
+                0x000001f6                _etext = .
 
-.data           0x00800100       0x8a load address 0x00000244
+.data           0x00800100        0x6 load address 0x000001f6
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
- .data.atCom4   0x00800100       0x15 Positionsmodul.o
-                0x00800100                atCom4
- .data.atCom3   0x00800115       0x49 Positionsmodul.o
-                0x00800115                atCom3
- .data.atCom2   0x0080015e       0x22 Positionsmodul.o
-                0x0080015e                atCom2
- .data.atCom1   0x00800180        0xa Positionsmodul.o
-                0x00800180                atCom1
  *(.rodata)
  *(.rodata*)
+ .rodata.str1.1
+                0x00800100        0x5 Positionsmodul.o
  *(.gnu.linkonce.d*)
-                0x0080018a                . = ALIGN (0x2)
-                0x0080018a                _edata = .
-                0x0080018a                PROVIDE (__data_end, .)
+                0x00800106                . = ALIGN (0x2)
+ *fill*         0x00800105        0x1 
+                0x00800106                _edata = .
+                0x00800106                PROVIDE (__data_end, .)
 
-.bss            0x0080018a        0x1
-                0x0080018a                PROVIDE (__bss_start, .)
+.bss            0x00800106        0x1
+                0x00800106                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
  *(COMMON)
- COMMON         0x0080018a        0x1 Positionsmodul.o
-                0x0080018a                REC
-                0x0080018b                PROVIDE (__bss_end, .)
-                0x00000244                __data_load_start = LOADADDR (.data)
-                0x000002ce                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x00800106        0x1 Positionsmodul.o
+                0x00800106                REC
+                0x00800107                PROVIDE (__bss_end, .)
+                0x000001f6                __data_load_start = LOADADDR (.data)
+                0x000001fc                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x0080018b        0x0
-                0x0080018b                PROVIDE (__noinit_start, .)
+.noinit         0x00800107        0x0
+                0x00800107                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x0080018b                PROVIDE (__noinit_end, .)
-                0x0080018b                _end = .
-                0x0080018b                PROVIDE (__heap_start, .)
+                0x00800107                PROVIDE (__noinit_end, .)
+                0x00800107                _end = .
+                0x00800107                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -429,30 +427,30 @@ END GROUP
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0x471
+.debug_info     0x00000000      0x4b3
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0x471 Positionsmodul.o
+ .debug_info    0x00000000      0x4b3 Positionsmodul.o
 
-.debug_abbrev   0x00000000      0x1e2
+.debug_abbrev   0x00000000      0x1fa
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x1e2 Positionsmodul.o
+ .debug_abbrev  0x00000000      0x1fa Positionsmodul.o
 
-.debug_line     0x00000000      0x231
+.debug_line     0x00000000      0x23e
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x231 Positionsmodul.o
+ .debug_line    0x00000000      0x23e Positionsmodul.o
 
-.debug_frame    0x00000000      0x108
+.debug_frame    0x00000000       0xec
  *(.debug_frame)
- .debug_frame   0x00000000      0x108 Positionsmodul.o
+ .debug_frame   0x00000000       0xec Positionsmodul.o
 
 .debug_str      0x00000000      0x224
  *(.debug_str)
  .debug_str     0x00000000      0x224 Positionsmodul.o
                                 0x25d (size before relaxing)
 
-.debug_loc      0x00000000      0x15c
+.debug_loc      0x00000000      0x149
  *(.debug_loc)
- .debug_loc     0x00000000      0x15c Positionsmodul.o
+ .debug_loc     0x00000000      0x149 Positionsmodul.o
 
 .debug_macinfo
  *(.debug_macinfo)

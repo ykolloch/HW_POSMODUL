@@ -10,6 +10,7 @@
 #include "Positionsmodul.h"
 #include <util/delay.h>
 #include <avr/interrupt.h>
+#include <string.h>
 
 unsigned char atCom1[] = {"at+wm=3\n\r"};
 unsigned char atCom2[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};
@@ -65,26 +66,30 @@ char uart_read2() {
 	return UDR1;
 }
 
-void uart_sendString(unsigned char c[]) {
-	for(int i=0; i < sizeof(c); i++) {
-		uart_transmit(c[i]);
+void uart_sendString(int x, char tmp[]) {
+	for(int i=0; i < strlen(tmp); i++) {
+		if(x == 0){
+			uart_transmit(tmp[i]);
+		} else {
+			uart_transmit2(tmp[i]);	
+		}
 	}
 }
 
 void wifiDirect_connection() {
 	_delay_ms(1000);
-	uart_sendString(atCom1);
+	uart_sendString(0, atCom1);
 	_delay_ms(500);
-	uart_sendString(atCom2);
+	uart_sendString(0, atCom2);
 	_delay_ms(500);
-	uart_sendString(atCom3);
+	uart_sendString(0, atCom3);
 	_delay_ms(500);
-	uart_sendString(atCom4);
+	uart_sendString(0, atCom4);
 }
 
 ISR(USART0_RX_vect) {
 	REC = UDR0;
-	uart_transmit2(REC);
+	//uart_transmit2(REC);
 }
 
 int main(void)
@@ -94,10 +99,11 @@ int main(void)
 	uart_init();
 	uart_init2();
 	
-	wifiDirect_connection();
+	//wifiDirect_connection();
 	
     while(1)
     {
+		uart_sendString(1, "TEST");
 		PORTD ^= (1 << LED_GREEN);
 		_delay_ms(1000);
     }
