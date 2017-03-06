@@ -11,6 +11,13 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
+unsigned char atCom1[] = {"at+wm=3\n\r"};
+unsigned char atCom2[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};
+unsigned char atCom3[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};
+unsigned char atCom4[] = {"AT+P2PFIND=20000,2\n\r"};
+	
+volatile char REC;
+
 void uart_init(void) {
 	UBRR0H = (BAUDRATE >> 8);
 	UBRR0L = BAUDRATE;
@@ -27,6 +34,17 @@ void uart_init(void) {
 	sei();
 }
 
+void uart_init2(void) {
+	UBRR1H = (BAUDRATE >> 8);
+	UBRR1L = BAUDRATE;
+	
+	UCSR1B |= (1 << TXEN1) | (1 << RXEN1);
+	UCSR1C |= (1 << UCSZ11) | ( 1<< UCSZ10);
+	
+	UCSR1B |= (1 << RXCIE1);
+	UCSR1A |= (1 << RXC1);
+}
+
 void uart_transmit(unsigned char c) {
 	while(!(UCSR0A & (1 << UDRE0)));
 	UDR0 = c;
@@ -37,18 +55,49 @@ char uart_read() {
 	return UDR0;
 }
 
-I
+void uart_transmit2(unsigned char c) {
+	while(!(UCSR1A & (1 << UDRE1)));
+	UDR1 = c;
+}
+
+char uart_read2() {
+	while(!(UCSR1A & (1 << RXC1)));
+	return UDR1;
+}
+
+void uart_sendString(unsigned char c[]) {
+	for(int i=0; i < sizeof(c); i++) {
+		uart_transmit(c[i]);
+	}
+}
+
+void wifiDirect_connection() {
+	_delay_ms(1000);
+	uart_sendString(atCom1);
+	_delay_ms(500);
+	uart_sendString(atCom2);
+	_delay_ms(500);
+	uart_sendString(atCom3);
+	_delay_ms(500);
+	uart_sendString(atCom4);
+}
+
+ISR(USART0_RX_vect) {
+	REC = UDR0;
+	uart_transmit2(REC);
+}
 
 int main(void)
 {
 	DDRD |= (1 << LED_GREEN);
 	
 	uart_init();
+	uart_init2();
 	
+	wifiDirect_connection();
 	
     while(1)
     {
-		uart_transmit('a');
 		PORTD ^= (1 << LED_GREEN);
 		_delay_ms(1000);
     }
