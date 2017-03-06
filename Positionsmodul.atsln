@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "Positionsmodul", "Positionsmodul\Positionsmodul.cproj", "{B086F497-5F6C-41EB-85D7-F94112AFB514}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B086F497-5F6C-41EB-85D7-F94112AFB514}.Debug|AVR.ActiveCfg = Debug|AVR
+		{B086F497-5F6C-41EB-85D7-F94112AFB514}.Debug|AVR.Build.0 = Debug|AVR
+		{B086F497-5F6C-41EB-85D7-F94112AFB514}.Release|AVR.ActiveCfg = Release|AVR
+		{B086F497-5F6C-41EB-85D7-F94112AFB514}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
