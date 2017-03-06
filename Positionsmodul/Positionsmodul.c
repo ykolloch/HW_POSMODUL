@@ -8,15 +8,15 @@
 
 #include <avr/io.h>
 #include "Positionsmodul.h"
-#include <delay.h>
+#include <util/delay.h>
 #include <avr/interrupt.h>
 
-void uart_init() {
+void uart_init(void) {
 	UBRR0H = (BAUDRATE >> 8);
 	UBRR0L = BAUDRATE;
 	
 	UCSR0B |= (1 << TXEN0) | (1 << RXEN0);
-	UCSR0C = (1 << UCSZ01) | ( 1<< UCSZ00);
+	UCSR0C |= (1 << UCSZ01) | ( 1<< UCSZ00);
 	
 	UCSR0B |= (1 << RXCIE0);
 	UCSR0A |= (1 << RXC0);
@@ -27,7 +27,7 @@ void uart_init() {
 	sei();
 }
 
-void uart_transit(unsigned char c) {
+void uart_transmit(unsigned char c) {
 	while(!(UCSR0A & (1 << UDRE0)));
 	UDR0 = c;
 }
@@ -37,15 +37,21 @@ char uart_read() {
 	return UDR0;
 }
 
+I
+
 int main(void)
 {
+	DDRD |= (1 << LED_GREEN);
 	
 	uart_init();
 	
+	
     while(1)
     {
-		DDRD ^= (1 << LED_GREEN);
+		uart_transmit('a');
+		PORTD ^= (1 << LED_GREEN);
 		_delay_ms(1000);
-        //TODO:: Please write your application code 
     }
+	
+	return 0;
 }
