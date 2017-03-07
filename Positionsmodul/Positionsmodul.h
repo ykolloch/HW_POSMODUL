@@ -10,8 +10,6 @@
 #define POSITIONSMODUL_H_
 
 
-#define F_CPU 20000000UL
-
 
 #define BAUD 9600
 #define BAUDRATE ((F_CPU)/(BAUD*16UL)-1)
