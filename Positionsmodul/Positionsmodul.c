@@ -18,7 +18,7 @@ unsigned char atCom2[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};
 unsigned char atCom3[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};
 unsigned char atCom4[] = {"AT+P2PFIND=20000,2\n\r"};
 	
-volatile char macAddress[18];	
+volatile char macAddress[18];
 
 volatile char REC;
 volatile char recMsg[100];
@@ -82,7 +82,7 @@ void wifiDirect_connection() {
 	PORTD ^= (1 << LED_YELLOW);
 	_delay_ms(1000);
 	uart_sendString(atCom1);
-	_delay_ms(10000);
+	_delay_ms(500);
 	uart_sendString(atCom2);
 	_delay_ms(500);
 	uart_sendString(atCom3);
@@ -91,14 +91,31 @@ void wifiDirect_connection() {
 	PORTD ^= (1 << LED_YELLOW);
 }
 
+void get_macAddress(char temp[]) {
+	char subString[10];
+	char p2p_found[10] = {"p2p-dev"};
+	strncpy(subString, &temp[0], 7);
+	subString[8] = '\n';
+	subString[9] = '\0';
+	//uart_sendString2(subString);
+	if(strcmp(p2p_found, subString) == 0) {
+		PORTD ^= (1 << LED_RED);
+		strncpy(&macAddress, &temp[13], sizeof(&macAddress));
+		uart_sendString2(temp);
+	}
+}
+
 ISR(USART0_RX_vect) {
 	REC = UDR0;
 	recMsg[msgInt] = REC;
 	if(REC == '\n') {
+		recMsg[msgInt++] = '\n';
 		recMsg[msgInt++] = '\0';
 		msgInt = 0;
-		uart_sendString2(recMsg);
+		get_macAddress(recMsg);
+		//uart_sendString2(recMsg);
 		memset(&recMsg[0], 0, sizeof(recMsg));
+	} else if (REC == '\r')	{
 	} else {
 		msgInt++;
 	}
