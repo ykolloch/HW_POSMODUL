@@ -18,5 +18,8 @@
 #define LED_YELLOW PD6
 #define LED_RED PD7
 
+#define TRUE 0
+#define FALSE 1
+
 
 #endif /* POSITIONSMODUL_H_ */
