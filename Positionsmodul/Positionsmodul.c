@@ -24,6 +24,7 @@ unsigned char atCom4[] = {"AT+P2PFIND=20000,2\n\r"};
 volatile char macAddress[19];
 
 volatile char REC;
+volatile char REC2:
 volatile char recMsg[100];
 volatile int msgInt = 0;
 
@@ -47,6 +48,7 @@ void uart_init2(void) {
 	UCSR1B |= (1 << TXEN1) | (1 << RXEN1);
 	UCSR1C |= (1 << UCSZ11) | ( 1<< UCSZ10);
 	
+	sei();
 }
 
 void uart_transmit(char c) {
@@ -95,14 +97,13 @@ void wifiDirect_connection() {
 }
 
 void grp_request() {
-	_delay_ms(10000);
+	_delay_ms(20000);
 	do 
 	{
 		char ppd[30];
 		char p1[] = {"at+p2ppd="};
 		char p2[] = {",0\n\r"};
 		sprintf(ppd, "%s%s%s", p1, macAddress, p2);
-		uart_sendString2(ppd);
 		uart_sendString(ppd);
 		
 		_delay_ms(5000);
@@ -112,8 +113,8 @@ void grp_request() {
 		char p3[] = {"at+p2pgrpform="};
 		char p4[] = {",6,0,,1,0,0\n\r"};
 		sprintf(grp_form, "%s%s%s", p3, macAddress, p4);
-		uart_sendString2(grp_form);
 		uart_sendString(grp_form);
+		_delay_ms(3000);
 		return;
 	} while (macAddress[0] != '\0');
 }
@@ -121,6 +122,7 @@ void grp_request() {
 void get_macAddress(char temp[]) {
 	char subString[10];
 	char p2p_found[10] = {"p2p-dev"};
+	char p2p_found2[10] = {"p2v-fou"};
 	strncpy(subString, &temp[0], 7);
 	subString[8] = '\n';
 	subString[9] = '\0';
@@ -129,11 +131,17 @@ void get_macAddress(char temp[]) {
 		strncpy(&macAddress, &temp[14], 17);
 		macAddress[18] = '\0';
 		uart_sendString2(macAddress);
+	} else if(strcmp(p2p_found2, subString) == 0) {
+		PORTD ^= (1 << LED_RED);
+		strncpy(&macAddress, &temp[10], 17);
+		macAddress[18] = '\0';
+		uart_sendString2(macAddress);
 	}
 }
 
 ISR(USART0_RX_vect) {
 	REC = UDR0;
+	uart_transmit2(REC);
 	recMsg[msgInt] = REC;
 	if(REC == '\n') {
 		recMsg[msgInt++] = '\n';
@@ -145,6 +153,11 @@ ISR(USART0_RX_vect) {
 	} else {
 		msgInt++;
 	}
+}
+
+ISR(USART1_RX_vect_num) {
+	REC2 = UDR1;
+	uart_transmit(REC2);
 }
 
 int main(void)
