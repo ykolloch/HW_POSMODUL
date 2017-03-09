@@ -17,14 +17,11 @@ unsigned char atCom1[] = {"at+wm=3\n\r"};
 unsigned char atCom2[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};
 unsigned char atCom3[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};
 unsigned char atCom4[] = {"AT+P2PFIND=20000,2\n\r"};
-	
-//unsigned char atCom5[] = {"at+p2ppd=%C,0\n\r"};
-//unsigned char atCom5[] = {"at+p2pgrpform=7a:f8:82:cb:a3:05,6,0,,1,0,0\n\r"};	
 
 volatile char macAddress[19];
 
 volatile char REC;
-volatile char REC2:
+volatile char REC2;
 volatile char recMsg[100];
 volatile int msgInt = 0;
 
@@ -52,7 +49,11 @@ void uart_init2(void) {
 }
 
 void uart_transmit(char c) {
-	while(!(UCSR0A & (1 << UDRE0)));
+	while(!(UCSR0A & (1 << UDRE0))) {
+		PORTD |= (1 << LED_RED);
+	}
+	
+	PORTD &= ~(1 << LED_RED);
 	UDR0 = c;
 }
 
@@ -100,20 +101,21 @@ void grp_request() {
 	_delay_ms(20000);
 	do 
 	{
+		
 		char ppd[30];
 		char p1[] = {"at+p2ppd="};
 		char p2[] = {",0\n\r"};
-		sprintf(ppd, "%s%s%s", p1, macAddress, p2);
-		uart_sendString(ppd);
+		sprintf(ppd, "%s%s%s", p1, macAddress, p2);			//add found Mac-Address
+		uart_sendString(ppd);								//ppd request
 		
-		_delay_ms(5000);
+		_delay_ms(5000);									//wait for safety
 		
 		//at+p2pgrpform=7a:f8:82:cb:a3:05,6,0,,1,0,0
 		char grp_form[45];
 		char p3[] = {"at+p2pgrpform="};
 		char p4[] = {",6,0,,1,0,0\n\r"};
-		sprintf(grp_form, "%s%s%s", p3, macAddress, p4);
-		uart_sendString(grp_form);
+		sprintf(grp_form, "%s%s%s", p3, macAddress, p4);	//add found Mac-Address
+		uart_sendString(grp_form);							//groupform request
 		_delay_ms(3000);
 		return;
 	} while (macAddress[0] != '\0');
@@ -121,27 +123,25 @@ void grp_request() {
 
 void get_macAddress(char temp[]) {
 	char subString[10];
-	char p2p_found[10] = {"p2p-dev"};
-	char p2p_found2[10] = {"p2v-fou"};
+	char p2p_found[10] = {"p2p-dev"};		//p2p device found
+	char p2p_found2[10] = {"p2v-fou"};		//backup
 	strncpy(subString, &temp[0], 7);
 	subString[8] = '\n';
 	subString[9] = '\0';
 	if(strcmp(p2p_found, subString) == 0) {
 		PORTD ^= (1 << LED_RED);
-		strncpy(&macAddress, &temp[14], 17);
+		strncpy(&macAddress, &temp[14], 17);		//string copy Mac-Address
 		macAddress[18] = '\0';
-		uart_sendString2(macAddress);
 	} else if(strcmp(p2p_found2, subString) == 0) {
 		PORTD ^= (1 << LED_RED);
 		strncpy(&macAddress, &temp[10], 17);
 		macAddress[18] = '\0';
-		uart_sendString2(macAddress);
 	}
 }
 
 ISR(USART0_RX_vect) {
 	REC = UDR0;
-	uart_transmit2(REC);
+	//uart_transmit2(REC);
 	recMsg[msgInt] = REC;
 	if(REC == '\n') {
 		recMsg[msgInt++] = '\n';
@@ -155,9 +155,11 @@ ISR(USART0_RX_vect) {
 	}
 }
 
-ISR(USART1_RX_vect_num) {
+ISR(USART1_RX_vect) {
 	REC2 = UDR1;
-	uart_transmit(REC2);
+	if(REC2 != '\0') {
+		PORTD ^= (1 << LED_YELLOW);
+	}
 }
 
 int main(void)
