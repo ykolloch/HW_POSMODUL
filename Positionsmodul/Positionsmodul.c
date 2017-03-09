@@ -45,6 +45,7 @@ void uart_init2(void) {
 	UCSR1B |= (1 << TXEN1) | (1 << RXEN1);
 	UCSR1C |= (1 << UCSZ11) | ( 1<< UCSZ10);
 	
+	sei();
 }
 
 void uart_transmit(char c) {
@@ -131,18 +132,16 @@ void get_macAddress(char temp[]) {
 		PORTD ^= (1 << LED_RED);
 		strncpy(&macAddress, &temp[14], 17);		//string copy Mac-Address
 		macAddress[18] = '\0';
-		uart_sendString2(macAddress);
 	} else if(strcmp(p2p_found2, subString) == 0) {
 		PORTD ^= (1 << LED_RED);
 		strncpy(&macAddress, &temp[10], 17);
 		macAddress[18] = '\0';
-		uart_sendString2(macAddress);
 	}
 }
 
 ISR(USART0_RX_vect) {
 	REC = UDR0;
-	uart_transmit2(REC);
+	//uart_transmit2(REC);
 	recMsg[msgInt] = REC;
 	if(REC == '\n') {
 		recMsg[msgInt++] = '\n';
@@ -153,6 +152,13 @@ ISR(USART0_RX_vect) {
 	} else if (REC == '\r')	{
 	} else {
 		msgInt++;
+	}
+}
+
+ISR(USART1_RX_vect) {
+	REC2 = UDR1;
+	if(REC2 != '\0') {
+		PORTD ^= (1 << LED_YELLOW);
 	}
 }
 
