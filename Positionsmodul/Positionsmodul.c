@@ -6,6 +6,7 @@
  */ 
 
 #define F_CPU 20000000UL
+#define ESC 27
 
 #include <avr/io.h>
 #include "Positionsmodul.h"
@@ -13,17 +14,21 @@
 #include <avr/interrupt.h>
 #include <string.h>
 
-unsigned char atCom1[] = {"at+wm=3\n\r"};
-unsigned char atCom2[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};
-unsigned char atCom3[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};
-unsigned char atCom4[] = {"AT+P2PFIND=20000,2\n\r"};
+unsigned char atCom1[] = {"at+wrxactive=1\n\r"};
+unsigned char atCom2[] = {"at+wm=3\n\r"};
+unsigned char atCom3[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};
+unsigned char atCom4[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};
+unsigned char atCom5[] = {"AT+P2PFIND=5000,2\n\r"};
 
 volatile char macAddress[19];
+volatile char host_ip[] = {"192.168.49.1"};		//change with get_hostIP()
 
 volatile char REC;
 volatile char REC2;
 volatile char recMsg[100];
+volatile char recMsg2[200];
 volatile int msgInt = 0;
+volatile int msgInt2 = 0;
 
 void uart_init(void) {
 	UBRR0H = (BAUDRATE >> 8);
@@ -94,11 +99,13 @@ void wifiDirect_connection() {
 	uart_sendString(atCom3);
 	_delay_ms(500);
 	uart_sendString(atCom4);
+	_delay_ms(500);
+	uart_sendString(atCom5);
 	PORTD ^= (1 << LED_YELLOW);
 }
 
 void grp_request() {
-	_delay_ms(20000);
+	_delay_ms(5000);
 	do 
 	{
 		
@@ -121,6 +128,25 @@ void grp_request() {
 	} while (macAddress[0] != '\0');
 }
 
+void tcp_connection() {
+	do 
+	{
+		uart_sendString("at+ndhcp=1\n\r");
+		_delay_ms(500);
+		char nct[27];
+		char p1[] = {"at+nctcp="};
+		char p2[] = {",8288\n\r"};
+		sprintf(nct, "%s%s%s",p1, host_ip, p2);				//add host_ip
+		uart_sendString(nct);
+		_delay_ms(3000);
+		return;
+	} while (host_ip[0] != '\0');
+}
+
+void get_hostIP(char tmp[]) {
+	
+}
+
 void get_macAddress(char temp[]) {
 	char subString[10];
 	char p2p_found[10] = {"p2p-dev"};		//p2p device found
@@ -139,15 +165,26 @@ void get_macAddress(char temp[]) {
 	}
 }
 
+void buildTransmissionString(char data[]) {
+	PORTD |= (1 << LED_YELLOW);
+	const unsigned char temp[12];
+	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
+	unsigned char m[] = {"Hello"};
+	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
+	sprintf(temp, "%s%s%s", s, m, p3);
+	uart_sendString(temp);
+}
+
 ISR(USART0_RX_vect) {
 	REC = UDR0;
-	//uart_transmit2(REC);
+	uart_transmit2(REC);
 	recMsg[msgInt] = REC;
 	if(REC == '\n') {
 		recMsg[msgInt++] = '\n';
 		recMsg[msgInt++] = '\0';
 		msgInt = 0;
 		get_macAddress(recMsg);
+		get_hostIP(recMsg);
 		memset(&recMsg[0], 0, sizeof(recMsg));
 	} else if (REC == '\r')	{
 	} else {
@@ -157,10 +194,20 @@ ISR(USART0_RX_vect) {
 
 ISR(USART1_RX_vect) {
 	REC2 = UDR1;
-	if(REC2 != '\0') {
-		PORTD ^= (1 << LED_YELLOW);
+	uart_transmit2(REC2);
+	recMsg2[msgInt2] = REC2;
+	if(REC2 == '\n') {
+		recMsg2[msgInt2++] = '\n';
+		recMsg2[msgInt2++] = '\0';
+		msgInt2 = 0;
+		buildTransmissionString(recMsg2);
+		memset(&recMsg2[0], 0, sizeof(recMsg2));
+		} else if (REC2 == '\r')	{
+		} else {
+		msgInt2++;
 	}
 }
+
 
 int main(void)
 {
@@ -177,6 +224,7 @@ int main(void)
 	
 	wifiDirect_connection();
 	grp_request();
+	tcp_connection();
 	
     while(1)
     {

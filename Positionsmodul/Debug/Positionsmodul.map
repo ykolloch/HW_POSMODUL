@@ -31,6 +31,7 @@ Allocating common symbols
 Common symbol       size              file
 
 REC                 0x1               Positionsmodul.o
+recMsg2             0xc8              Positionsmodul.o
 REC2                0x1               Positionsmodul.o
 recMsg              0x64              Positionsmodul.o
 macAddress          0x13              Positionsmodul.o
@@ -44,12 +45,12 @@ Discarded input sections
  .bss           0x00000000        0x0 Positionsmodul.o
  .text.uart_read
                 0x00000000       0x10 Positionsmodul.o
- .text.uart_transmit2
-                0x00000000       0x10 Positionsmodul.o
  .text.uart_read2
                 0x00000000       0x10 Positionsmodul.o
  .text.uart_sendString2
                 0x00000000       0x44 Positionsmodul.o
+ .text.get_hostIP
+                0x00000000        0x2 Positionsmodul.o
  .text          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  .data          0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  .bss           0x00000000        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
@@ -267,7 +268,7 @@ END GROUP
 .rela.plt
  *(.rela.plt)
 
-.text           0x00000000      0xafa
+.text           0x00000000      0xd2c
  *(.vectors)
  .vectors       0x00000000       0x7c c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5/crtm644pa.o
                 0x00000000                __vector_default
@@ -364,61 +365,70 @@ END GROUP
  .text.uart_transmit
                 0x0000010e       0x1c Positionsmodul.o
                 0x0000010e                uart_transmit
+ .text.uart_transmit2
+                0x0000012a       0x10 Positionsmodul.o
+                0x0000012a                uart_transmit2
  .text.uart_sendString
-                0x0000012a       0x44 Positionsmodul.o
-                0x0000012a                uart_sendString
+                0x0000013a       0x44 Positionsmodul.o
+                0x0000013a                uart_sendString
  .text.wifiDirect_connection
-                0x0000016e       0x7a Positionsmodul.o
-                0x0000016e                wifiDirect_connection
+                0x0000017e       0x94 Positionsmodul.o
+                0x0000017e                wifiDirect_connection
  .text.grp_request
-                0x000001e8      0x124 Positionsmodul.o
-                0x000001e8                grp_request
+                0x00000212      0x124 Positionsmodul.o
+                0x00000212                grp_request
+ .text.tcp_connection
+                0x00000336       0xbc Positionsmodul.o
+                0x00000336                tcp_connection
  .text.get_macAddress
-                0x0000030c       0xce Positionsmodul.o
-                0x0000030c                get_macAddress
+                0x000003f2       0xce Positionsmodul.o
+                0x000003f2                get_macAddress
+ .text.buildTransmissionString
+                0x000004c0       0x8e Positionsmodul.o
+                0x000004c0                buildTransmissionString
  .text.__vector_20
-                0x000003da       0xde Positionsmodul.o
-                0x000003da                __vector_20
+                0x0000054e       0xe6 Positionsmodul.o
+                0x0000054e                __vector_20
  .text.__vector_28
-                0x000004b8       0x34 Positionsmodul.o
-                0x000004b8                __vector_28
- .text.main     0x000004ec       0x38 Positionsmodul.o
-                0x000004ec                main
+                0x00000634       0xe6 Positionsmodul.o
+                0x00000634                __vector_28
+ .text.main     0x0000071a       0x3c Positionsmodul.o
+                0x0000071a                main
  .text.avr-libc
-                0x00000524       0x12 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strcmp.o)
-                0x00000524                strcmp
+                0x00000756       0x12 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strcmp.o)
+                0x00000756                strcmp
  .text.avr-libc
-                0x00000536       0x1e c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncpy.o)
-                0x00000536                strncpy
+                0x00000768       0x1e c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strncpy.o)
+                0x00000768                strncpy
  .text.avr-libc
-                0x00000554       0x44 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(sprintf.o)
-                0x00000554                sprintf
+                0x00000786       0x44 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(sprintf.o)
+                0x00000786                sprintf
  .text.avr-libc
-                0x00000598      0x3a4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(vfprintf_std.o)
-                0x00000598                vfprintf
+                0x000007ca      0x3a4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(vfprintf_std.o)
+                0x000007ca                vfprintf
  .text.avr-libc
-                0x0000093c       0x16 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strnlen_P.o)
-                0x0000093c                strnlen_P
+                0x00000b6e       0x16 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strnlen_P.o)
+                0x00000b6e                strnlen_P
  .text.avr-libc
-                0x00000952       0x16 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strnlen.o)
-                0x00000952                strnlen
+                0x00000b84       0x16 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(strnlen.o)
+                0x00000b84                strnlen
  .text.avr-libc
-                0x00000968       0x64 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(fputc.o)
-                0x00000968                fputc
+                0x00000b9a       0x64 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(fputc.o)
+                0x00000b9a                fputc
  .text.avr-libc
-                0x000009cc       0xbc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(ultoa_invert.o)
-                0x000009cc                __ultoa_invert
+                0x00000bfe       0xbc c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/../../../../avr/lib/avr5\libc.a(ultoa_invert.o)
+                0x00000bfe                __ultoa_invert
  .text.libgcc.prologue
-                0x00000a88       0x38 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_prologue.o)
-                0x00000a88                __prologue_saves__
+                0x00000cba       0x38 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_prologue.o)
+                0x00000cba                __prologue_saves__
  .text.libgcc.prologue
-                0x00000ac0       0x36 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_epilogue.o)
-                0x00000ac0                __epilogue_restores__
-                0x00000af6                . = ALIGN (0x2)
+                0x00000cf2       0x36 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_epilogue.o)
+                0x00000cf2                __epilogue_restores__
+                0x00000d28                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x00000af6        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
-                0x00000af6                _exit
-                0x00000af6                exit
+ .fini9         0x00000d28        0x0 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+                0x00000d28                _exit
+                0x00000d28                exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -437,55 +447,62 @@ END GROUP
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x00000af6        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
+ .fini0         0x00000d28        0x4 c:/program files (x86)/atmel/atmel toolchain/avr8 gcc/native/3.4.1061/avr8-gnu-toolchain/bin/../lib/gcc/avr/4.8.1/avr5\libgcc.a(_exit.o)
  *(.fini0)
-                0x00000afa                _etext = .
+                0x00000d2c                _etext = .
 
-.data           0x00800100       0xcc load address 0x00000afa
+.data           0x00800100      0x10e load address 0x00000d2c
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
- .data.atCom4   0x00800100       0x15 Positionsmodul.o
-                0x00800100                atCom4
- .data.atCom3   0x00800115       0x49 Positionsmodul.o
-                0x00800115                atCom3
- .data.atCom2   0x0080015e       0x22 Positionsmodul.o
-                0x0080015e                atCom2
- .data.atCom1   0x00800180        0xa Positionsmodul.o
-                0x00800180                atCom1
+ .data.host_ip  0x00800100        0xd Positionsmodul.o
+                0x00800100                host_ip
+ .data.atCom5   0x0080010d       0x14 Positionsmodul.o
+                0x0080010d                atCom5
+ .data.atCom4   0x00800121       0x49 Positionsmodul.o
+                0x00800121                atCom4
+ .data.atCom3   0x0080016a       0x22 Positionsmodul.o
+                0x0080016a                atCom3
+ .data.atCom2   0x0080018c        0xa Positionsmodul.o
+                0x0080018c                atCom2
+ .data.atCom1   0x00800196       0x11 Positionsmodul.o
+                0x00800196                atCom1
  *(.rodata)
- .rodata        0x0080018a       0x14 Positionsmodul.o
+ .rodata        0x008001a7       0x14 Positionsmodul.o
  *(.rodata*)
  .rodata.str1.1
-                0x0080019e       0x2e Positionsmodul.o
-                                 0x33 (size before relaxing)
+                0x008001bb       0x53 Positionsmodul.o
+                                 0x58 (size before relaxing)
  *(.gnu.linkonce.d*)
-                0x008001cc                . = ALIGN (0x2)
-                0x008001cc                _edata = .
-                0x008001cc                PROVIDE (__data_end, .)
+                0x0080020e                . = ALIGN (0x2)
+                0x0080020e                _edata = .
+                0x0080020e                PROVIDE (__data_end, .)
 
-.bss            0x008001cc       0x7b
-                0x008001cc                PROVIDE (__bss_start, .)
+.bss            0x0080020e      0x145
+                0x0080020e                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
- .bss.msgInt    0x008001cc        0x2 Positionsmodul.o
-                0x008001cc                msgInt
+ .bss.msgInt2   0x0080020e        0x2 Positionsmodul.o
+                0x0080020e                msgInt2
+ .bss.msgInt    0x00800210        0x2 Positionsmodul.o
+                0x00800210                msgInt
  *(COMMON)
- COMMON         0x008001ce       0x79 Positionsmodul.o
-                0x008001ce                REC
-                0x008001cf                REC2
-                0x008001d0                recMsg
-                0x00800234                macAddress
-                0x00800247                PROVIDE (__bss_end, .)
-                0x00000afa                __data_load_start = LOADADDR (.data)
-                0x00000bc6                __data_load_end = (__data_load_start + SIZEOF (.data))
+ COMMON         0x00800212      0x141 Positionsmodul.o
+                0x00800212                REC
+                0x00800213                recMsg2
+                0x008002db                REC2
+                0x008002dc                recMsg
+                0x00800340                macAddress
+                0x00800353                PROVIDE (__bss_end, .)
+                0x00000d2c                __data_load_start = LOADADDR (.data)
+                0x00000e3a                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x00800247        0x0
-                0x00800247                PROVIDE (__noinit_start, .)
+.noinit         0x00800353        0x0
+                0x00800353                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x00800247                PROVIDE (__noinit_end, .)
-                0x00800247                _end = .
-                0x00800247                PROVIDE (__heap_start, .)
+                0x00800353                PROVIDE (__noinit_end, .)
+                0x00800353                _end = .
+                0x00800353                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -548,38 +565,38 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0x88
+.debug_aranges  0x00000000       0xa0
  *(.debug_aranges)
  .debug_aranges
-                0x00000000       0x88 Positionsmodul.o
+                0x00000000       0xa0 Positionsmodul.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000      0x8d7
+.debug_info     0x00000000      0xc37
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000      0x8d7 Positionsmodul.o
+ .debug_info    0x00000000      0xc37 Positionsmodul.o
 
-.debug_abbrev   0x00000000      0x26b
+.debug_abbrev   0x00000000      0x253
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x26b Positionsmodul.o
+ .debug_abbrev  0x00000000      0x253 Positionsmodul.o
 
-.debug_line     0x00000000      0x371
+.debug_line     0x00000000      0x3d6
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x371 Positionsmodul.o
+ .debug_line    0x00000000      0x3d6 Positionsmodul.o
 
-.debug_frame    0x00000000      0x1c8
+.debug_frame    0x00000000      0x264
  *(.debug_frame)
- .debug_frame   0x00000000      0x1c8 Positionsmodul.o
+ .debug_frame   0x00000000      0x264 Positionsmodul.o
 
-.debug_str      0x00000000      0x2ba
+.debug_str      0x00000000      0x310
  *(.debug_str)
- .debug_str     0x00000000      0x2ba Positionsmodul.o
-                                0x2fe (size before relaxing)
+ .debug_str     0x00000000      0x310 Positionsmodul.o
+                                0x354 (size before relaxing)
 
-.debug_loc      0x00000000      0x387
+.debug_loc      0x00000000      0x4f1
  *(.debug_loc)
- .debug_loc     0x00000000      0x387 Positionsmodul.o
+ .debug_loc     0x00000000      0x4f1 Positionsmodul.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -599,9 +616,9 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000       0x78
+.debug_ranges   0x00000000       0x90
  *(.debug_ranges)
- .debug_ranges  0x00000000       0x78 Positionsmodul.o
+ .debug_ranges  0x00000000       0x90 Positionsmodul.o
 
 .debug_macro
  *(.debug_macro)
