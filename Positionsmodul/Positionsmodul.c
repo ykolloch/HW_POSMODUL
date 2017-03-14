@@ -32,6 +32,14 @@ volatile int msgInt2 = 0;
 
 volatile int start_transmission = 0;
 
+
+
+
+const volatile char temp[12];
+const volatile char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
+const volatile char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
+volatile char lul[1];
+
 void uart_init(void) {
 	UBRR0H = (BAUDRATE >> 8);
 	UBRR0L = BAUDRATE;
@@ -180,20 +188,10 @@ void buildTransmissionString(char data[]) {
 	uart_sendString(temp);
 }
 
-void sendDataSingle(char tmpChar) {
-	if(start_transmission != 1)
-		return;
-	if(tmpChar == '\n' || tmpChar == '\r')
-		return;
-		
-	const unsigned char temp[12];
-	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
-	unsigned char m[] = {"Hello"};
-	const unsigned char c = 'a';
-	unsigned char lul[1];
-	sprintf(lul, "%c", tmpChar);
-	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
-	sprintf(temp, "%s%s%s", s, lul, p3);
+void sendDataSingle(volatile char tmpChar) {
+	//const unsigned char c = 'a';
+	//sprintf(lul, "%c", tmpChar);
+	sprintf(temp, "%s%c%s", s, tmpChar, p3);
 	uart_sendString(temp);
 }
 
@@ -217,19 +215,6 @@ ISR(USART1_RX_vect) {
 	REC2 = UDR1;
 	if(start_transmission == 1)
 		sendDataSingle(REC2);
-	/**
-	recMsg2[msgInt2] = REC2;
-	if(REC2 == '\n') {
-		recMsg2[msgInt2++] = '\n';
-		recMsg2[msgInt2++] = '\0';
-		msgInt2 = 0;
-		buildTransmissionString(recMsg2);
-		memset(&recMsg2[0], 0, sizeof(recMsg2));
-		} else if (REC2 == '\r')	{
-		} else {
-		msgInt2++;
-	}
-	**/
 }
 
 
