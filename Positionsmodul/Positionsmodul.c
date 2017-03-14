@@ -30,6 +30,8 @@ volatile char recMsg2[200];
 volatile int msgInt = 0;
 volatile int msgInt2 = 0;
 
+volatile int start_transmission = 0;
+
 void uart_init(void) {
 	UBRR0H = (BAUDRATE >> 8);
 	UBRR0L = BAUDRATE;
@@ -50,15 +52,15 @@ void uart_init2(void) {
 	UCSR1B |= (1 << TXEN1) | (1 << RXEN1);
 	UCSR1C |= (1 << UCSZ11) | ( 1<< UCSZ10);
 	
+	UCSR1B |= (1 << RXCIE1);
+	UCSR1A | (1 << RXC1);
+	
 	sei();
 }
 
 void uart_transmit(char c) {
 	while(!(UCSR0A & (1 << UDRE0))) {
-		PORTD |= (1 << LED_RED);
 	}
-	
-	PORTD &= ~(1 << LED_RED);
 	UDR0 = c;
 }
 
@@ -139,6 +141,7 @@ void tcp_connection() {
 		sprintf(nct, "%s%s%s",p1, host_ip, p2);				//add host_ip
 		uart_sendString(nct);
 		_delay_ms(3000);
+		start_transmission = 1;
 		return;
 	} while (host_ip[0] != '\0');
 }
@@ -166,18 +169,36 @@ void get_macAddress(char temp[]) {
 }
 
 void buildTransmissionString(char data[]) {
+	if(start_transmission != 1)
+		return;
 	PORTD |= (1 << LED_YELLOW);
-	const unsigned char temp[12];
+	const unsigned char temp[100];
 	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
 	unsigned char m[] = {"Hello"};
 	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
-	sprintf(temp, "%s%s%s", s, m, p3);
+	sprintf(temp, "%s%s%s", s, data, p3);
+	uart_sendString(temp);
+}
+
+void sendDataSingle(char tmpChar) {
+	if(start_transmission != 1)
+		return;
+	if(tmpChar == '\n' || tmpChar == '\r')
+		return;
+		
+	const unsigned char temp[12];
+	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
+	unsigned char m[] = {"Hello"};
+	const unsigned char c = 'a';
+	unsigned char lul[1];
+	sprintf(lul, "%c", tmpChar);
+	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
+	sprintf(temp, "%s%s%s", s, lul, p3);
 	uart_sendString(temp);
 }
 
 ISR(USART0_RX_vect) {
 	REC = UDR0;
-	uart_transmit2(REC);
 	recMsg[msgInt] = REC;
 	if(REC == '\n') {
 		recMsg[msgInt++] = '\n';
@@ -194,7 +215,9 @@ ISR(USART0_RX_vect) {
 
 ISR(USART1_RX_vect) {
 	REC2 = UDR1;
-	uart_transmit2(REC2);
+	if(start_transmission == 1)
+		sendDataSingle(REC2);
+	/**
 	recMsg2[msgInt2] = REC2;
 	if(REC2 == '\n') {
 		recMsg2[msgInt2++] = '\n';
@@ -206,6 +229,7 @@ ISR(USART1_RX_vect) {
 		} else {
 		msgInt2++;
 	}
+	**/
 }
 
 
@@ -229,7 +253,6 @@ int main(void)
     while(1)
     {
 		PORTD ^= (1 << LED_GREEN);
-		_delay_ms(500);
     }
 	
 	return 0;
