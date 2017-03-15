@@ -14,15 +14,22 @@
 #include <avr/interrupt.h>
 #include <string.h>
 
-unsigned char atCom1[] = {"at+wrxactive=1\n\r"};
-unsigned char atCom2[] = {"at+wm=3\n\r"};
-unsigned char atCom3[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};
-unsigned char atCom4[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};
-unsigned char atCom5[] = {"AT+P2PFIND=5000,2\n\r"};
+/************************************************************************/
+/* AT+Commands for Wi-Fi Direct connection.								*/
+/************************************************************************/
+unsigned char atCom1[] = {"at+wrxactive=1\n\r"};															//set wrxactive
+unsigned char atCom2[] = {"at+wm=3\n\r"};																	//set wm=3 (Wi-Fi Direct)
+unsigned char atCom3[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};											//set p2p device
+unsigned char atCom4[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};	//set wps
+unsigned char atCom5[] = {"AT+P2PFIND=5000,2\n\r"};															//find Wi-Fi Direct devices, 5sec.
 
-volatile char macAddress[19];
-volatile char host_ip[] = {"192.168.49.1"};		//change with get_hostIP()
+volatile char macAddress[19];																				//MAC-Address of found Wi-Fi Direct device.
+volatile char host_ip[] = {"192.168.49.1"};																	//change with get_hostIP()
+volatile int start_transmission = 0;																		//Start data transmission.
 
+/************************************************************************/
+/* var for Interrupts													*/
+/************************************************************************/
 volatile char REC;
 volatile char REC2;
 volatile char recMsg[100];
@@ -30,16 +37,17 @@ volatile char recMsg2[200];
 volatile int msgInt = 0;
 volatile int msgInt2 = 0;
 
-volatile int start_transmission = 0;
-
-
-
-
+/************************************************************************/
+/* var for Data transmissions											*/
+/************************************************************************/
 const volatile char temp[12];
-const volatile char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
-const volatile char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
+const volatile char s[] = {0x1B, 0x53, 0x30};																//Hex = <ESC> S <CID>
+const volatile char p3[] = {0x1B, 0x45};																	//HEY = <ESC> E
 volatile char lul[1];
 
+/************************************************************************/
+/* init UART0 with Interrupts											*/
+/************************************************************************/
 void uart_init(void) {
 	UBRR0H = (BAUDRATE >> 8);
 	UBRR0L = BAUDRATE;
@@ -53,6 +61,9 @@ void uart_init(void) {
 	sei();
 }
 
+/************************************************************************/
+/* init UART1 with Interrupts											*/
+/************************************************************************/
 void uart_init2(void) {
 	UBRR1H = (BAUDRATE >> 8);
 	UBRR1L = BAUDRATE;
@@ -66,39 +77,60 @@ void uart_init2(void) {
 	sei();
 }
 
+/************************************************************************/
+/* transmit char for UART0												*/
+/************************************************************************/
 void uart_transmit(char c) {
 	while(!(UCSR0A & (1 << UDRE0))) {
 	}
 	UDR0 = c;
 }
 
+/************************************************************************/
+/* read char for UART0													*/
+/************************************************************************/
 char uart_read() {
 	while(!(UCSR0A & (1 << RXC0)));
 	return UDR0;
 }
 
+/************************************************************************/
+/* transmit char for UART1												*/
+/************************************************************************/
 void uart_transmit2(char c) {
 	while(!(UCSR1A & (1 << UDRE1)));
 	UDR1 = c;
 }
 
+/************************************************************************/
+/* read char for UART1													*/
+/************************************************************************/
 char uart_read2() {
 	while(!(UCSR1A & (1 << RXC1)));
 	return UDR1;
 }
 
+/************************************************************************/
+/* sends String for UART0 via uart_transmit().                          */
+/************************************************************************/
 void uart_sendString(char temp[]) {
 	for(int i=0; i < strlen(temp); i++) {
 		uart_transmit(temp[i]);
 	}
 }
 
+/************************************************************************/
+/* sends String for UART1 via uart_transmit2().                         */
+/************************************************************************/
 void uart_sendString2(char temp[]) {
 	for(int i=0; i < strlen(temp); i++) {
 		uart_transmit2(temp[i]);
 	}
 }
 
+/************************************************************************/
+/* execute the AT-Commands to establish Wi-Fi Direct connection.        */
+/************************************************************************/
 void wifiDirect_connection() {
 	PORTD ^= (1 << LED_YELLOW);
 	_delay_ms(1000);
@@ -114,6 +146,9 @@ void wifiDirect_connection() {
 	PORTD ^= (1 << LED_YELLOW);
 }
 
+/************************************************************************/
+/* builds/executes AT-Commands for PPD-request an GROUPFORM with macAddress      */
+/************************************************************************/
 void grp_request() {
 	_delay_ms(5000);
 	do 
@@ -124,10 +159,8 @@ void grp_request() {
 		char p2[] = {",0\n\r"};
 		sprintf(ppd, "%s%s%s", p1, macAddress, p2);			//add found Mac-Address
 		uart_sendString(ppd);								//ppd request
-		
 		_delay_ms(5000);									//wait for safety
 		
-		//at+p2pgrpform=7a:f8:82:cb:a3:05,6,0,,1,0,0
 		char grp_form[45];
 		char p3[] = {"at+p2pgrpform="};
 		char p4[] = {",6,0,,1,0,0\n\r"};
@@ -138,10 +171,13 @@ void grp_request() {
 	} while (macAddress[0] != '\0');
 }
 
+/************************************************************************/
+/* builds/executes AT+Command for TCP Connection						*/
+/************************************************************************/
 void tcp_connection() {
 	do 
 	{
-		uart_sendString("at+ndhcp=1\n\r");
+		uart_sendString("at+ndhcp=1\n\r");					//needed for host_ip
 		_delay_ms(500);
 		char nct[27];
 		char p1[] = {"at+nctcp="};
@@ -149,15 +185,21 @@ void tcp_connection() {
 		sprintf(nct, "%s%s%s",p1, host_ip, p2);				//add host_ip
 		uart_sendString(nct);
 		_delay_ms(3000);
-		start_transmission = 1;
+		start_transmission = 1;								//start of Data Transmission
 		return;
 	} while (host_ip[0] != '\0');
 }
 
+/************************************************************************/
+/* looks for Host IP, needed for TCP Connection							*/
+/************************************************************************/
 void get_hostIP(char tmp[]) {
 	
 }
 
+/************************************************************************/
+/* looks for MAC Address, needed for PPD/GroupForm.						*/
+/************************************************************************/
 void get_macAddress(char temp[]) {
 	char subString[10];
 	char p2p_found[10] = {"p2p-dev"};		//p2p device found
@@ -176,10 +218,12 @@ void get_macAddress(char temp[]) {
 	}
 }
 
+/************************************************************************/
+/* Creates and Sends a String via TCP Connection.						*/
+/************************************************************************/
 void buildTransmissionString(char data[]) {
 	if(start_transmission != 1)
 		return;
-	PORTD |= (1 << LED_YELLOW);
 	const unsigned char temp[100];
 	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
 	unsigned char m[] = {"Hello"};
@@ -188,13 +232,18 @@ void buildTransmissionString(char data[]) {
 	uart_sendString(temp);
 }
 
-void sendDataSingle(volatile char tmpChar) {
-	//const unsigned char c = 'a';
-	//sprintf(lul, "%c", tmpChar);
+/************************************************************************/
+/* Sends a single Char via TCP Connection.								*/
+/************************************************************************/
+void sendDataChar(volatile char tmpChar) {
 	sprintf(temp, "%s%c%s", s, tmpChar, p3);
 	uart_sendString(temp);
 }
 
+/************************************************************************/
+/* INTERUPT for UART0													*/
+/* Creates String from received Data for finding MAC-Address and Host IP*/
+/************************************************************************/
 ISR(USART0_RX_vect) {
 	REC = UDR0;
 	recMsg[msgInt] = REC;
@@ -211,15 +260,19 @@ ISR(USART0_RX_vect) {
 	}
 }
 
+/************************************************************************/
+/* INTERUPT for UART1													*/
+/************************************************************************/
 ISR(USART1_RX_vect) {
 	REC2 = UDR1;
 	if(start_transmission == 1)
-		sendDataSingle(REC2);
+		sendDataChar(REC2);
 }
 
-
-int main(void)
-{
+/************************************************************************/
+/* init for LEDs														*/
+/************************************************************************/
+void init_LED() {
 	DDRD |= (1 << LED_GREEN);
 	DDRD |= (1 << LED_YELLOW);
 	DDRD |= (1 << LED_RED);
@@ -227,6 +280,12 @@ int main(void)
 	PORTD &= ~(1 << LED_GREEN);
 	PORTD &= ~(1 << LED_YELLOW);
 	PORTD &= ~(1 << LED_RED);
+}
+
+
+int main(void)
+{
+	init_LED();
 	
 	uart_init();
 	uart_init2();
@@ -237,8 +296,8 @@ int main(void)
 	
     while(1)
     {
-		PORTD ^= (1 << LED_GREEN);
+		PORTD ^= (1 << LED_GREEN);				//only needed for testing
     }
 	
-	return 0;
+	return 0;									//IDE avoid warning.
 }
