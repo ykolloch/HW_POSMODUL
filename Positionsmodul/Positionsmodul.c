@@ -23,6 +23,7 @@ unsigned char atCom3[] = {"at+p2psetdev=0,81,11,11,2388,EU\n\r"};											//se
 unsigned char atCom4[] = {"at+p2psetwps=Positionsmodul,0006,0001,11223344556677881122334455667788\n\r"};	//set wps
 unsigned char atCom5[] = {"AT+P2PFIND=5000,2\n\r"};															//find Wi-Fi Direct devices, 5sec.
 
+//volatile char macAddress[] = {"7a:f8:82:cb:a3:05"};
 volatile char macAddress[19];																				//MAC-Address of found Wi-Fi Direct device.
 volatile char host_ip[] = {"192.168.49.1"};																	//change with get_hostIP()
 volatile int start_transmission = 0;																		//Start data transmission.
@@ -33,7 +34,7 @@ volatile int start_transmission = 0;																		//Start data transmission.
 volatile char REC;
 volatile char REC2;
 volatile char recMsg[100];
-volatile char recMsg2[200];
+volatile char recMsg2[100];
 volatile int msgInt = 0;
 volatile int msgInt2 = 0;
 
@@ -69,12 +70,12 @@ void uart_init2(void) {
 	UBRR1L = BAUDRATE;
 	
 	UCSR1B |= (1 << TXEN1) | (1 << RXEN1);
-	UCSR1C |= (1 << UCSZ11) | ( 1<< UCSZ10);
+	UCSR1C |= (1 << UCSZ11) | ( 1 << UCSZ10);
 	
 	UCSR1B |= (1 << RXCIE1);
-	UCSR1A | (1 << RXC1);
+	UCSR1A |= (1 << RXC1);
 	
-	sei();
+	//sei();
 }
 
 /************************************************************************/
@@ -132,7 +133,7 @@ void uart_sendString2(char temp[]) {
 /* execute the AT-Commands to establish Wi-Fi Direct connection.        */
 /************************************************************************/
 void wifiDirect_connection() {
-	PORTD ^= (1 << LED_YELLOW);
+	PORTD ^= (1 << LED_GREEN);
 	_delay_ms(1000);
 	uart_sendString(atCom1);
 	_delay_ms(500);
@@ -143,7 +144,6 @@ void wifiDirect_connection() {
 	uart_sendString(atCom4);
 	_delay_ms(500);
 	uart_sendString(atCom5);
-	PORTD ^= (1 << LED_YELLOW);
 }
 
 /************************************************************************/
@@ -186,6 +186,8 @@ void tcp_connection() {
 		uart_sendString(nct);
 		_delay_ms(3000);
 		start_transmission = 1;								//start of Data Transmission
+		
+		PORTD ^= (1 << LED_GREEN);
 		return;
 	} while (host_ip[0] != '\0');
 }
@@ -235,9 +237,18 @@ void buildTransmissionString(char data[]) {
 /************************************************************************/
 /* Sends a single Char via TCP Connection.								*/
 /************************************************************************/
-void sendDataChar(volatile char tmpChar) {
-	sprintf(temp, "%s%c%s", s, tmpChar, p3);
-	uart_sendString(temp);
+void sendDataChar() {
+	char esc = 0x1B;
+	char S = 0x53;
+	char o = 0x30;
+	char e = 0x45;
+	uart_transmit(esc);
+	uart_transmit(S);
+	uart_transmit(o);
+	uart_transmit(REC2);
+	uart_transmit(esc);
+	uart_transmit(e);
+	uart_transmit('\n');
 }
 
 /************************************************************************/
@@ -265,8 +276,10 @@ ISR(USART0_RX_vect) {
 /************************************************************************/
 ISR(USART1_RX_vect) {
 	REC2 = UDR1;
-	if(start_transmission == 1)
-		sendDataChar(REC2);
+	if(start_transmission == 1) {
+		sendDataChar();
+	}
+	REC2 = '\0';
 }
 
 /************************************************************************/
@@ -274,11 +287,9 @@ ISR(USART1_RX_vect) {
 /************************************************************************/
 void init_LED() {
 	DDRD |= (1 << LED_GREEN);
-	DDRD |= (1 << LED_YELLOW);
 	DDRD |= (1 << LED_RED);
 	
 	PORTD &= ~(1 << LED_GREEN);
-	PORTD &= ~(1 << LED_YELLOW);
 	PORTD &= ~(1 << LED_RED);
 }
 
@@ -296,7 +307,6 @@ int main(void)
 	
     while(1)
     {
-		PORTD ^= (1 << LED_GREEN);				//only needed for testing
     }
 	
 	return 0;									//IDE avoid warning.
