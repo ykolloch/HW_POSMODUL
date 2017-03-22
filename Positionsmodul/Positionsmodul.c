@@ -34,17 +34,24 @@ volatile int start_transmission = 0;																		//Start data transmission.
 volatile char REC;
 volatile char REC2;
 volatile char recMsg[100];
-volatile char recMsg2[100];
+volatile char recMsg2[200];
 volatile int msgInt = 0;
 volatile int msgInt2 = 0;
 
 /************************************************************************/
 /* var for Data transmissions											*/
 /************************************************************************/
-const volatile char temp[12];
 const volatile char s[] = {0x1B, 0x53, 0x30};																//Hex = <ESC> S <CID>
 const volatile char p3[] = {0x1B, 0x45};																	//HEY = <ESC> E
 volatile char lul[1];
+
+/************************************************************************/
+/* var for Timer														*/
+/************************************************************************/
+volatile int tenMilsec = 0;
+volatile char old_gnssData[200];
+volatile char new_gnssData[200];
+volatile int check_gnssData = 100;
 
 /************************************************************************/
 /* init UART0 with Interrupts											*/
@@ -72,10 +79,8 @@ void uart_init2(void) {
 	UCSR1B |= (1 << TXEN1) | (1 << RXEN1);
 	UCSR1C |= (1 << UCSZ11) | ( 1 << UCSZ10);
 	
-	UCSR1B |= (1 << RXCIE1);
-	UCSR1A |= (1 << RXC1);
 	
-	//sei();
+	UCSR1A |= (1 << RXC1);
 }
 
 /************************************************************************/
@@ -153,7 +158,6 @@ void grp_request() {
 	_delay_ms(5000);
 	do 
 	{
-		
 		char ppd[30];
 		char p1[] = {"at+p2ppd="};
 		char p2[] = {",0\n\r"};
@@ -185,7 +189,7 @@ void tcp_connection() {
 		sprintf(nct, "%s%s%s",p1, host_ip, p2);				//add host_ip
 		uart_sendString(nct);
 		_delay_ms(3000);
-		start_transmission = 1;								//start of Data Transmission
+		//start_transmission = 1;								//start of Data Transmission
 		
 		PORTD ^= (1 << LED_GREEN);
 		return;
@@ -223,21 +227,19 @@ void get_macAddress(char temp[]) {
 /************************************************************************/
 /* Creates and Sends a String via TCP Connection.						*/
 /************************************************************************/
-void buildTransmissionString(char data[]) {
-	if(start_transmission != 1)
-		return;
-	const unsigned char temp[100];
+void wifi_sendString(char data[]) {
+	volatile char transTemp[200];
 	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
-	unsigned char m[] = {"Hello"};
+	//unsigned char m[] = {"Hello"};
 	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
-	sprintf(temp, "%s%s%s", s, data, p3);
-	uart_sendString(temp);
+	sprintf(transTemp, "%s%s%s", s, data, p3);
+	uart_sendString(transTemp);
 }
 
 /************************************************************************/
 /* Sends a single Char via TCP Connection.								*/
 /************************************************************************/
-void sendDataChar() {
+void sendDataChar(char c) {
 	char esc = 0x1B;
 	char S = 0x53;
 	char o = 0x30;
@@ -245,7 +247,7 @@ void sendDataChar() {
 	uart_transmit(esc);
 	uart_transmit(S);
 	uart_transmit(o);
-	uart_transmit(REC2);
+	uart_transmit(c);
 	uart_transmit(esc);
 	uart_transmit(e);
 	uart_transmit('\n');
@@ -264,7 +266,7 @@ ISR(USART0_RX_vect) {
 		msgInt = 0;
 		get_macAddress(recMsg);
 		get_hostIP(recMsg);
-		memset(&recMsg[0], 0, sizeof(recMsg));
+		memset(&recMsg[0], 0, sizeof(recMsg));				//clear char array
 	} else if (REC == '\r')	{
 	} else {
 		msgInt++;
@@ -275,11 +277,30 @@ ISR(USART0_RX_vect) {
 /* INTERUPT for UART1													*/
 /************************************************************************/
 ISR(USART1_RX_vect) {
-	REC2 = UDR1;
 	if(start_transmission == 1) {
-		sendDataChar();
+		recMsg2[msgInt2] = UDR1;
+		if(recMsg2[msgInt2] == '\n') {
+			recMsg2[msgInt2++] = '\0';
+			msgInt2 = 0;
+			is_gga(recMsg2);
+			memset(&recMsg[0], 0, sizeof(recMsg));			//clear char array
+		} else if(recMsg2[msgInt2] == '\r') {
+		} else {
+			msgInt2++;
+		}
 	}
-	REC2 = '\0';
+}
+
+void is_gga(char temp[]) {
+	char subString[10];
+	char gga[10] = {"GPGGA"};		//GGA message
+	strncpy(subString, &temp[0], 5);
+	subString[5] = '\0';
+	if(strcmp(gga, subString) == 0) {
+		strncpy(&new_gnssData, &temp[0], sizeof(temp));		//string copy Mac-Address
+		int size = sizeof(new_gnssData);
+		new_gnssData[size++] = '\0';
+	}
 }
 
 /************************************************************************/
@@ -288,14 +309,55 @@ ISR(USART1_RX_vect) {
 void init_LED() {
 	DDRD |= (1 << LED_GREEN);
 	DDRD |= (1 << LED_RED);
+	DDRD |= (1 << GNSS_RST);
 	
 	PORTD &= ~(1 << LED_GREEN);
 	PORTD &= ~(1 << LED_RED);
+	PORTD |= (1 << GNSS_RST);
+}
+
+/************************************************************************/
+/* Resets the GNSS-Modul												*/
+/************************************************************************/
+void reset_gnss() {
+	UCSR1B |= (1 << RXCIE1);
+	PORTD ^= (1 << GNSS_RST);
+	_delay_ms(500);
+	PORTD ^= (1 << GNSS_RST);
+	start_transmission = 1;
+}
+
+void init_timer2() {
+	PRR0 = (0 << PRTIM2);
+	
+	TCCR2B = (1 << CS21);			//8bit presacale
+	TCNT2 = 5;						//pre value 5-255
+	
+	TIMSK2 |= (1 << TOIE2);			//interrupt
+	
+	sei();
 }
 
 
+ISR(TIMER2_OVF_vect) {
+	if(tenMilsec == 10) {
+		check_gnssData--;
+		if(check_gnssData == 0) {
+			PORTD ^= (1 << LED_RED);
+			if(start_transmission == 1){
+				wifi_sendString(recMsg2);
+			}
+			check_gnssData = 100;
+		}
+		tenMilsec = 0;
+	} else {
+		tenMilsec++;		
+	}
+}
+
 int main(void)
 {
+	init_timer2();
 	init_LED();
 	
 	uart_init();
@@ -305,8 +367,14 @@ int main(void)
 	grp_request();
 	tcp_connection();
 	
+	reset_gnss();
+	
     while(1)
     {
+		/**
+		if(start_transmission == 1) {
+			sendDataChar();
+		}	**/	
     }
 	
 	return 0;									//IDE avoid warning.

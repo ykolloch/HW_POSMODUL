@@ -16,6 +16,7 @@
 
 #define LED_GREEN PD5
 #define LED_RED PD6
+#define GNSS_RST PD7
 
 #define TRUE 0
 #define FALSE 1
