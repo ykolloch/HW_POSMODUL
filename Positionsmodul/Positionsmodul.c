@@ -162,6 +162,12 @@ void wifiDirect_connection() {
 /************************************************************************/
 void grp_request() {
 	_delay_ms(5000);
+	if(macAddress[0] == '\0') {
+		while(1) {
+			PORTD ^= (1 << LED_RED);
+			_delay_ms(500);
+		}
+	}
 	do 
 	{
 		char ppd[30];
@@ -227,25 +233,6 @@ void get_macAddress(char temp[]) {
 	}
 }
 
-/************************************************************************/
-/* Creates and Sends a String via TCP Connection.						*/
-/************************************************************************/
-void wifi_sendString(volatile char data[]) {
-	volatile char trasmit[300];
-	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
-	volatile char m[] = {"Hello12345678912318932912831273891237123927828282"};
-	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
-	sprintf(trasmit, "%s%s%s", s, data, p3);
-	uart_sendString(trasmit);
-}
-
-void wifi_sendPosData(volatile char temp[]) {
-	volatile char trasmit[300];
-	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
-	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
-	sprintf(trasmit, "%s%s%s", s, temp, p3);
-	uart_sendString(trasmit);
-}
 
 /************************************************************************/
 /* Sends a single Char via TCP Connection.								*/
@@ -284,10 +271,6 @@ ISR(USART0_RX_vect) {
 	}
 }
 
-void copy_GGA(char temp[]) {
-	int i = sizeof(temp);
-	strncpy(&gga_message, temp[0], i);
-}
 /************************************************************************/
 /* INTERUPT for UART1													*/
 /************************************************************************/
@@ -316,14 +299,7 @@ void is_gga(char temp[]) {
 		strncpy(subString, &temp[0], 6);
 		subString[6] = '\0';
 		if(strcmp(gga, subString) == 0) {
-			PORTD ^= (1 << LED_RED);
 			lock = TRUE;
-			/**
-			int size = sizeof(temp);
-			strncpy(&new_gnssData, &temp[0], size);		//string copy Mac-Address
-			int size2 = sizeof(new_gnssData);
-			new_gnssData[size2++] = '\0';
-			**/
 		}
 	}
 }
@@ -402,10 +378,6 @@ int main(void)
 	
     while(1)
     {
-		/**
-		if(start_transmission == 1) {
-			sendDataChar();
-		}	**/	
     }
 	
 	return 0;									//IDE avoid warning.

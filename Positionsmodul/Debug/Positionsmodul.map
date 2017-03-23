@@ -57,12 +57,6 @@ Discarded input sections
                 0x00000000       0x44 Positionsmodul.o
  .text.get_hostIP
                 0x00000000        0x2 Positionsmodul.o
- .text.wifi_sendString
-                0x00000000       0x98 Positionsmodul.o
- .text.wifi_sendPosData
-                0x00000000       0x86 Positionsmodul.o
- .text.copy_GGA
-                0x00000000       0x14 Positionsmodul.o
  .data.p3       0x00000000        0x2 Positionsmodul.o
  .data.s        0x00000000        0x3 Positionsmodul.o
  .data.test     0x00000000        0x6 Positionsmodul.o
@@ -476,7 +470,7 @@ END GROUP
  *(.fini0)
                 0x00000e54                _etext = .
 
-.data           0x00800100      0x14a load address 0x00000e54
+.data           0x00800100      0x118 load address 0x00000e54
                 0x00800100                PROVIDE (__data_start, .)
  *(.data)
  *(.data*)
@@ -504,48 +498,48 @@ END GROUP
  .rodata        0x008001ad       0x1e Positionsmodul.o
  *(.rodata*)
  .rodata.str1.1
-                0x008001cb       0x7f Positionsmodul.o
-                                 0x84 (size before relaxing)
+                0x008001cb       0x4d Positionsmodul.o
+                                 0x52 (size before relaxing)
  *(.gnu.linkonce.d*)
-                0x0080024a                . = ALIGN (0x2)
-                0x0080024a                _edata = .
-                0x0080024a                PROVIDE (__data_end, .)
+                0x00800218                . = ALIGN (0x2)
+                0x00800218                _edata = .
+                0x00800218                PROVIDE (__data_end, .)
 
-.bss            0x0080024a      0x3a2
-                0x0080024a                PROVIDE (__bss_start, .)
+.bss            0x00800218      0x3a2
+                0x00800218                PROVIDE (__bss_start, .)
  *(.bss)
  *(.bss*)
  .bss.tenMilsec
-                0x0080024a        0x2 Positionsmodul.o
-                0x0080024a                tenMilsec
- .bss.msgInt2   0x0080024c        0x2 Positionsmodul.o
-                0x0080024c                msgInt2
- .bss.msgInt    0x0080024e        0x2 Positionsmodul.o
-                0x0080024e                msgInt
+                0x00800218        0x2 Positionsmodul.o
+                0x00800218                tenMilsec
+ .bss.msgInt2   0x0080021a        0x2 Positionsmodul.o
+                0x0080021a                msgInt2
+ .bss.msgInt    0x0080021c        0x2 Positionsmodul.o
+                0x0080021c                msgInt
  .bss.start_transmission
-                0x00800250        0x2 Positionsmodul.o
-                0x00800250                start_transmission
+                0x0080021e        0x2 Positionsmodul.o
+                0x0080021e                start_transmission
  *(COMMON)
- COMMON         0x00800252      0x39a Positionsmodul.o
-                0x00800252                REC
-                0x00800253                recMsg2
-                0x0080031b                gga_message
-                0x008003e3                REC2
-                0x008003e4                recMsg
-                0x00800448                old_gnssData
-                0x00800510                new_gnssData
-                0x008005d8                lul
-                0x008005d9                macAddress
-                0x008005ec                PROVIDE (__bss_end, .)
+ COMMON         0x00800220      0x39a Positionsmodul.o
+                0x00800220                REC
+                0x00800221                recMsg2
+                0x008002e9                gga_message
+                0x008003b1                REC2
+                0x008003b2                recMsg
+                0x00800416                old_gnssData
+                0x008004de                new_gnssData
+                0x008005a6                lul
+                0x008005a7                macAddress
+                0x008005ba                PROVIDE (__bss_end, .)
                 0x00000e54                __data_load_start = LOADADDR (.data)
-                0x00000f9e                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x00000f6c                __data_load_end = (__data_load_start + SIZEOF (.data))
 
-.noinit         0x008005ec        0x0
-                0x008005ec                PROVIDE (__noinit_start, .)
+.noinit         0x008005ba        0x0
+                0x008005ba                PROVIDE (__noinit_start, .)
  *(.noinit*)
-                0x008005ec                PROVIDE (__noinit_end, .)
-                0x008005ec                _end = .
-                0x008005ec                PROVIDE (__heap_start, .)
+                0x008005ba                PROVIDE (__noinit_end, .)
+                0x008005ba                _end = .
+                0x008005ba                PROVIDE (__heap_start, .)
 
 .eeprom         0x00810000        0x0
  *(.eeprom*)
@@ -608,38 +602,38 @@ END GROUP
 .debug_sfnames
  *(.debug_sfnames)
 
-.debug_aranges  0x00000000       0xe0
+.debug_aranges  0x00000000       0xc8
  *(.debug_aranges)
  .debug_aranges
-                0x00000000       0xe0 Positionsmodul.o
+                0x00000000       0xc8 Positionsmodul.o
 
 .debug_pubnames
  *(.debug_pubnames)
 
-.debug_info     0x00000000     0x10c0
+.debug_info     0x00000000      0xecf
  *(.debug_info .gnu.linkonce.wi.*)
- .debug_info    0x00000000     0x10c0 Positionsmodul.o
+ .debug_info    0x00000000      0xecf Positionsmodul.o
 
-.debug_abbrev   0x00000000      0x358
+.debug_abbrev   0x00000000      0x326
  *(.debug_abbrev)
- .debug_abbrev  0x00000000      0x358 Positionsmodul.o
+ .debug_abbrev  0x00000000      0x326 Positionsmodul.o
 
-.debug_line     0x00000000      0x485
+.debug_line     0x00000000      0x449
  *(.debug_line .debug_line.* .debug_line_end)
- .debug_line    0x00000000      0x485 Positionsmodul.o
+ .debug_line    0x00000000      0x449 Positionsmodul.o
 
-.debug_frame    0x00000000      0x368
+.debug_frame    0x00000000      0x300
  *(.debug_frame)
- .debug_frame   0x00000000      0x368 Positionsmodul.o
+ .debug_frame   0x00000000      0x300 Positionsmodul.o
 
-.debug_str      0x00000000      0x3db
+.debug_str      0x00000000      0x3a4
  *(.debug_str)
- .debug_str     0x00000000      0x3db Positionsmodul.o
-                                0x41f (size before relaxing)
+ .debug_str     0x00000000      0x3a4 Positionsmodul.o
+                                0x3e8 (size before relaxing)
 
-.debug_loc      0x00000000      0x799
+.debug_loc      0x00000000      0x653
  *(.debug_loc)
- .debug_loc     0x00000000      0x799 Positionsmodul.o
+ .debug_loc     0x00000000      0x653 Positionsmodul.o
 
 .debug_macinfo
  *(.debug_macinfo)
@@ -659,9 +653,9 @@ END GROUP
 .debug_pubtypes
  *(.debug_pubtypes)
 
-.debug_ranges   0x00000000       0xd0
+.debug_ranges   0x00000000       0xb8
  *(.debug_ranges)
- .debug_ranges  0x00000000       0xd0 Positionsmodul.o
+ .debug_ranges  0x00000000       0xb8 Positionsmodul.o
 
 .debug_macro
  *(.debug_macro)
