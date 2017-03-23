@@ -14,6 +14,10 @@
 #include <avr/interrupt.h>
 #include <string.h>
 
+volatile char test[] = {"costa"};
+volatile int in_transmittion = FALSE;
+volatile int lock = FALSE;
+
 /************************************************************************/
 /* AT+Commands for Wi-Fi Direct connection.								*/
 /************************************************************************/
@@ -52,6 +56,7 @@ volatile int tenMilsec = 0;
 volatile char old_gnssData[200];
 volatile char new_gnssData[200];
 volatile int check_gnssData = 100;
+volatile char gga_message[200];
 
 /************************************************************************/
 /* init UART0 with Interrupts											*/
@@ -138,8 +143,9 @@ void uart_sendString2(char temp[]) {
 /* execute the AT-Commands to establish Wi-Fi Direct connection.        */
 /************************************************************************/
 void wifiDirect_connection() {
-	PORTD ^= (1 << LED_GREEN);
+	PORTD ^= (1 << LED_GREEN);			//start signal
 	_delay_ms(1000);
+	PORTD ^= (1 << LED_GREEN);
 	uart_sendString(atCom1);
 	_delay_ms(500);
 	uart_sendString(atCom2);
@@ -189,9 +195,6 @@ void tcp_connection() {
 		sprintf(nct, "%s%s%s",p1, host_ip, p2);				//add host_ip
 		uart_sendString(nct);
 		_delay_ms(3000);
-		//start_transmission = 1;								//start of Data Transmission
-		
-		PORTD ^= (1 << LED_GREEN);
 		return;
 	} while (host_ip[0] != '\0');
 }
@@ -214,11 +217,11 @@ void get_macAddress(char temp[]) {
 	subString[8] = '\n';
 	subString[9] = '\0';
 	if(strcmp(p2p_found, subString) == 0) {
-		PORTD ^= (1 << LED_RED);
+		PORTD ^= (1 << LED_GREEN);
 		strncpy(&macAddress, &temp[14], 17);		//string copy Mac-Address
 		macAddress[18] = '\0';
 	} else if(strcmp(p2p_found2, subString) == 0) {
-		PORTD ^= (1 << LED_RED);
+		//PORTD ^= (1 << LED_GREEN);
 		strncpy(&macAddress, &temp[10], 17);
 		macAddress[18] = '\0';
 	}
@@ -227,13 +230,21 @@ void get_macAddress(char temp[]) {
 /************************************************************************/
 /* Creates and Sends a String via TCP Connection.						*/
 /************************************************************************/
-void wifi_sendString(char data[]) {
-	volatile char transTemp[200];
+void wifi_sendString(volatile char data[]) {
+	volatile char trasmit[300];
 	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
-	//unsigned char m[] = {"Hello"};
+	volatile char m[] = {"Hello12345678912318932912831273891237123927828282"};
 	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
-	sprintf(transTemp, "%s%s%s", s, data, p3);
-	uart_sendString(transTemp);
+	sprintf(trasmit, "%s%s%s", s, data, p3);
+	uart_sendString(trasmit);
+}
+
+void wifi_sendPosData(volatile char temp[]) {
+	volatile char trasmit[300];
+	const unsigned char s[] = {0x1B, 0x53, 0x30};			//Hex = <ESC> S <CID>
+	const unsigned char p3[] = {0x1B, 0x45};				//HEY = <ESC> E
+	sprintf(trasmit, "%s%s%s", s, temp, p3);
+	uart_sendString(trasmit);
 }
 
 /************************************************************************/
@@ -273,11 +284,15 @@ ISR(USART0_RX_vect) {
 	}
 }
 
+void copy_GGA(char temp[]) {
+	int i = sizeof(temp);
+	strncpy(&gga_message, temp[0], i);
+}
 /************************************************************************/
 /* INTERUPT for UART1													*/
 /************************************************************************/
 ISR(USART1_RX_vect) {
-	if(start_transmission == 1) {
+	if(start_transmission == 1 && lock != TRUE) {
 		recMsg2[msgInt2] = UDR1;
 		if(recMsg2[msgInt2] == '\n') {
 			recMsg2[msgInt2++] = '\0';
@@ -291,15 +306,25 @@ ISR(USART1_RX_vect) {
 	}
 }
 
+/************************************************************************/
+/*                                                                      */
+/************************************************************************/
 void is_gga(char temp[]) {
-	char subString[10];
-	char gga[10] = {"GPGGA"};		//GGA message
-	strncpy(subString, &temp[0], 5);
-	subString[5] = '\0';
-	if(strcmp(gga, subString) == 0) {
-		strncpy(&new_gnssData, &temp[0], sizeof(temp));		//string copy Mac-Address
-		int size = sizeof(new_gnssData);
-		new_gnssData[size++] = '\0';
+	if(in_transmittion != TRUE) {
+		char subString[10];
+		char gga[10] = {"$GPGGA"};		//GGA message
+		strncpy(subString, &temp[0], 6);
+		subString[6] = '\0';
+		if(strcmp(gga, subString) == 0) {
+			PORTD ^= (1 << LED_RED);
+			lock = TRUE;
+			/**
+			int size = sizeof(temp);
+			strncpy(&new_gnssData, &temp[0], size);		//string copy Mac-Address
+			int size2 = sizeof(new_gnssData);
+			new_gnssData[size2++] = '\0';
+			**/
+		}
 	}
 }
 
@@ -340,12 +365,18 @@ void init_timer2() {
 
 
 ISR(TIMER2_OVF_vect) {
-	if(tenMilsec == 10) {
+	if(tenMilsec == 100) {
 		check_gnssData--;
 		if(check_gnssData == 0) {
-			PORTD ^= (1 << LED_RED);
+			//PORTD ^= (1 << LED_RED);
 			if(start_transmission == 1){
-				wifi_sendString(recMsg2);
+				in_transmittion = TRUE;
+				int size = sizeof(recMsg2);
+				for(int i = 0; i < size; i++) {
+					sendDataChar(recMsg2[i]);
+				}
+				lock = FALSE;
+				in_transmittion = FALSE;
 			}
 			check_gnssData = 100;
 		}
